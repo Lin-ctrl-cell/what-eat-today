@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>逗比寒MillerRHan的资料</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: #1a1a2e;
+            color: black;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .profile-container {
+            width: 1200px;
+            max-width: 95%;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            display: flex;
+            gap: 40px;
+            position: relative;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            color: balck;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .character-image {
+            flex: 0 0 300px;
+        }
+
+        .character-image img {
+            width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .character-info {
+            flex: 1;
+        }
+
+        .character-info h1 {
+            color: #4a9df2;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            border-bottom: 3px solid #4a9df2;
+            padding-bottom: 10px;
+        }
+
+        .character-info h2 {
+            color: #f39c12;
+            margin: 25px 0 15px 0;
+            font-size: 1.5em;
+        }
+
+        .character-info p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .character-info ul {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+
+        .character-info li {
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .character-info li:before {
+            content: "•";
+            color: #4a9df2;
+            font-size: 1.5em;
+            position: absolute;
+            left: 0;
+            top: -5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <button class="back-button" onclick="window.location.href='directory.html'">返回目录</button>
+        
+        <div class="character-image">
+            <img src="images/portraits/mlh.png" alt="逗比寒MillerRHan">
+        </div>
+        
+        <div class="character-info">
+            <h1>逗比寒MillerRHan</h1>
+            
+            <h2>他的B站主页指路</h2>
+            <a href="https://space.bilibili.com/26104684" target="_blank" rel="noopener noreferrer">https://space.bilibili.com/12208594</a>            
+            <h2>仙术杯相关</h2>
+            <p>这里填写人物在仙术杯中的表现、成就或趣事...</p>
+            
+            <h2>经典时刻</h2>
+            <ul>
+                <li>时刻1描述...</li>
+                <li>时刻2描述...</li>
+                <li>时刻3描述...</li>
+            </ul>
+            
+            <h2>人物轶事</h2>
+            <p>这里填写其他有趣的故事或特点...</p>
+        </div>
+    </div>
+    
+    <script src="js/audioManager.js"></script>
+    <script>
+        // 初始化音频
+        window.addEventListener('DOMContentLoaded', function() {
+            if (window.AudioManager) {
+                AudioManager.init();
+            }
+        });
+        
+        // 如果直接访问，跳回封面
+        if (!sessionStorage.getItem('hasEnteredFromCover')) {
+            window.location.href = 'cover.html';
+        }
+    </script>
+</body>
+</html>

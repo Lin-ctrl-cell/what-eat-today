@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>仙术众生相</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: #1a1a2e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* 固定尺寸主容器 */
+        #main-container {
+            width: 1600px;
+            height: 800px;
+            position: relative;
+            background: #000;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+            border-radius: 8px;
+        }
+
+        /* 场景背景 - 置于底层 */
+        #scene-background {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+        }
+
+        /* 对话层容器 - 在背景之上 */
+        #dialogue-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        /* 对话立绘 */
+        .dialogue-portrait {
+            position: absolute;
+            left: -150px;
+            bottom: 0;
+            height: 700px;
+            width: auto;
+            z-index: 10;
+            transform-origin: bottom left;
+            animation: portraitAppear 0.5s ease;
+        }
+        
+        @keyframes portraitAppear {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 对话框 */
+        .dialogue-bubble {
+            position: absolute;
+            bottom: 50px;
+            left: 320px;
+            right: 40px;
+            min-height: 200px;
+            background: rgba(30, 30, 46, 0.95);
+            border-radius: 20px;
+            padding: 30px 35px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            z-index: 20;
+            border-left: 10px solid #4a6fa5;
+            animation: bubbleAppear 0.5s ease;
+            backdrop-filter: blur(5px);
+        }
+        
+        @keyframes bubbleAppear {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .speaker-name {
+            font-weight: bold;
+            font-size: 1.4em;
+            color: #fff;
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+        
+        .dialogue-text {
+            font-size: 1.5em;
+            line-height: 1.8;
+            color: #f0f0f0;
+            min-height: 70px;
+        }
+        
+        .continue-hint {
+            text-align: right;
+            color: #aaa;
+            font-style: italic;
+            margin-top: 20px;
+            font-size: 1em;
+            animation: blink 1.5s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        /* 免责声明弹窗样式 */
+        #disclaimer-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .disclaimer-content {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 50px;
+            border-radius: 20px;
+            max-width: 700px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+            z-index: 1001;
+        }
+        
+        .disclaimer-content h2 {
+            color: #4a9df2;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+        
+        .disclaimer-content p {
+            line-height: 1.8;
+            margin-bottom: 35px;
+            font-size: 1.2em;
+            text-align: left;
+        }
+        
+        #close-disclaimer {
+            background: linear-gradient(135deg, #4a9df2, #2c8be8);
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        #close-disclaimer:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(74, 157, 242, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <!-- 固定尺寸主容器 -->
+    <div id="main-container">
+        <!-- 背景层（根据剧情可切换）- 在底层 -->
+        <div id="scene-background"></div>
+        
+        <!-- 动态对话层 - 在背景之上 -->
+        <div id="dialogue-container">
+            <!-- 人物立绘 (每次只显示一个) -->
+            <img id="current-portrait" class="dialogue-portrait" src="" alt="" style="display:none;">
+            <!-- 对话框 (每次只显示一个) -->
+            <div id="current-bubble" class="dialogue-bubble" style="display:none;">
+                <div class="speaker-name"></div>
+                <div class="dialogue-text"></div>
+                <div class="continue-hint">↓ 点击以继续……</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 免责声明弹窗 -->
+    <div id="disclaimer-modal">
+        <div class="disclaimer-content">
+            <h2>宇宙免责声明</h2>
+            <p>
+                故事带有笔者一定主观色彩，如有不实为笔者资料查证不清，如有人物形象塑造问题为笔者全责，请不要上升真人，引起本站提及人物的困扰。"仙术杯"比赛实为友好交流、共同促进游戏体验的玩家自建赛事平台，维护良好讨论环境是你我的分内之事，愿与诸君共勉。
+            </p>
+            <p>本站为无盈利网站，除原创素材外，部分素材来源于《明日方舟》官方发布内容及二创。再此感谢所有素材提供者，如有不当，可联系作者删除。</p>
+            <button id="close-disclaimer">返回目录</button>
+        </div>
+    </div>
+
+    <!-- 引入所有必要的JS文件 -->
+    <script src="js/audioManager.js"></script>
+    <script src="js/dialogueSystem_new.js"></script>
+    <script src="js/storyData.js"></script>
+    
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('main_story.html 加载完成');
+            
+            // 1. 初始化音频系统
+            if (window.AudioManager) {
+                AudioManager.init();
+            } else {
+                console.error('AudioManager not found');
+            }
+            
+            // 2. 初始化对话系统
+            if (typeof mainStoryScript !== 'undefined') {
+                console.log('找到剧本数据，初始化对话系统');
+                DialogueSystem.init('#main-container', mainStoryScript);
+            } else {
+                console.error('错误：未找到剧本数据 mainStoryScript');
+                const bubble = document.getElementById('current-bubble');
+                if (bubble) {
+                    bubble.querySelector('.speaker-name').textContent = '错误';
+                    bubble.querySelector('.dialogue-text').textContent = '剧本数据加载失败';
+                    bubble.style.display = 'block';
+                }
+            }
+            
+            // 3. 设置免责声明按钮
+            function setupDisclaimerButton() {
+                const closeBtn = document.getElementById('close-disclaimer');
+                if (!closeBtn) {
+                    console.warn('免责声明按钮未找到，1秒后重试');
+                    setTimeout(setupDisclaimerButton, 1000);
+                    return;
+                }
+                
+                // 移除旧的事件监听器
+                const newCloseBtn = closeBtn.cloneNode(true);
+                closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+                
+                // 添加新的事件监听器
+                document.getElementById('close-disclaimer').addEventListener('click', function() {
+                    console.log('免责声明关闭按钮被点击');
+                    
+                    // 播放音效
+                    if (window.AudioManager) {
+                        AudioManager.playSound(AudioManager.SOUNDS.UNLOCK);
+                    }
+                    
+                    // 关闭弹窗
+                    const modal = document.getElementById('disclaimer-modal');
+                    if (modal) {
+                        modal.style.display = 'none';
+                    }
+                    
+                    // 直接跳转回目录
+                    setTimeout(function() {
+                        console.log('跳转回目录页');
+                        window.location.href = 'directory.html';
+                    }, 300);
+                });
+                
+                console.log('免责声明按钮事件绑定完成');
+            }
+            
+            // 延迟设置按钮事件，确保元素已加载
+            setTimeout(setupDisclaimerButton, 500);
+        });
+        
+        // 刷新控制 - 如果直接访问此页，跳回封面
+        if (!sessionStorage.getItem('hasEnteredFromCover')) {
+            console.log('检测到直接访问主线故事页，跳回封面');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

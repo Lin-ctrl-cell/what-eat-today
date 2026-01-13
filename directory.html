@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>人物目录</title>
+    <style>
+        /* 全屏背景 */
+        body {
+            margin: 0;
+            background: #1a1a2e;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        /* 固定尺寸主容器 - 背景置于底层 */
+        #main-container {
+            width: 1600px;
+            height: 800px;
+            margin: 0 auto;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+        
+        /* 背景图片层 - 确保在最底层 */
+        #background-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('images/backgrounds/ui.png') no-repeat center center;
+            background-size: cover;
+            z-index: 1;
+        }
+        
+        /* 内容层 - 在背景之上 */
+        #content-layer {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #fff;
+            margin-bottom: 30px;
+            font-size: 2.8em;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+            z-index: 3;
+        }
+        
+        /* 统一的立绘容器 - 淡灰色背景 */
+        #character-container {
+            width: 1600px;
+            height: 800px;
+            background: rgba(200, 200, 200, 0.15);
+            border-radius: 10px;
+            box-shadow: 
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset 0 0 20px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(3px);
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* 使用8x1网格布局 - 无间距 */
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: 1fr;
+            gap: 0; /* 无间距 */
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* 立绘卡片 - 8个并排 */
+        .character-portrait {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            background: rgba(180, 180, 180, 0.1);
+            box-shadow: 
+                inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+                inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+            margin: 0; /* 确保无外边距 */
+            padding: 5px; /* 很小的内边距 */
+            height: 100%; /* 占满容器高度 */
+            overflow: hidden;
+        }
+        
+        /* 第一个和最后一个卡片圆角 */
+        .character-portrait:first-child {
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+        }
+        
+        .character-portrait:last-child {
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+        
+        /* 鼠标悬停时变亮 - 区分选中状态 */
+        .character-portrait:hover {
+            background: rgba(240, 240, 240, 0.25);
+            box-shadow: 
+                inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+                inset 0 0 20px rgba(255, 255, 255, 0.1),
+                0 0 30px rgba(255, 255, 255, 0.15);
+            z-index: 10; /* 确保悬停时在最上层 */
+        }
+        
+        .character-portrait:hover img {
+                transform: scale(1.1);
+        }
+        
+        /* 立绘图片 - 更大一些 */
+        .character-portrait img {
+            width: 200px; /* 调整为合适的尺寸 */
+            height: auto;
+            max-height: 500px; /* 限制最大高度 */
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            object-fit: contain; /* 保持比例 */
+        }
+        
+        /* 人物名字 - 删除光晕效果 */
+        .character-portrait .name {
+            text-align: center;
+            margin-top: 30px;
+            color: black;
+            font-size: 18px;
+            font-weight: bold;
+            /* 删除光晕效果，只保留基本的阴影让文字更清晰 */
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+            transition: color 0.3s ease;
+            padding: 0 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 160px;
+        }
+        
+        /* 悬停时只改变颜色，不再添加光晕 */
+        .character-portrait:hover .name {
+            color: #fff;
+            /* 删除光晕效果，只保留基本的阴影 */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* 删除添加光晕效果的伪元素 */
+        .character-portrait::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            box-shadow: inset 0 0 40px rgba(255, 255, 255, 0);
+            transition: box-shadow 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .character-portrait:hover::after {
+            /* 删除光晕效果 */
+            box-shadow: inset 0 0 40px rgba(255, 255, 255, 0.15);
+        }
+                /* 引导对话框样式 - 与主线故事相同 */
+        .dialogue-portrait {
+            position: absolute;
+            left: -150px;
+            bottom: 0;
+            height: 700px;
+            width: auto;
+            z-index: 10;
+            transform-origin: bottom left;
+            animation: portraitAppear 0.5s ease;
+        }
+        
+        @keyframes portraitAppear {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dialogue-bubble {
+            position: absolute;
+            bottom: 50px;
+            left: 320px;
+            right: 40px;
+            min-height: 200px;
+            background: rgba(30, 30, 46, 0.95);
+            border-radius: 20px;
+            padding: 30px 35px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            z-index: 20;
+            border-left: 10px solid #4a6fa5;
+            animation: bubbleAppear 0.5s ease;
+            backdrop-filter: blur(5px);
+        }
+        
+        @keyframes bubbleAppear {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .speaker-name {
+            font-weight: bold;
+            font-size: 1.4em;
+            color: #fff;
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+        
+        .dialogue-text {
+            font-size: 1.5em;
+            line-height: 1.8;
+            color: #f0f0f0;
+            min-height: 70px;
+        }
+        
+        .continue-hint {
+            text-align: right;
+            color: #aaa;
+            font-style: italic;
+            margin-top: 20px;
+            font-size: 1em;
+            animation: blink 1.5s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+    </style>
+
+</head>
+<body>
+    <!-- 固定尺寸主容器 -->
+    <div id="main-container">
+        <!-- 背景层 - 在最底层 -->
+        <div id="background-layer"></div>
+        
+        <!-- 内容层 -->
+        <div id="content-layer">
+            
+            <!-- 统一的立绘容器 -->
+            <div id="character-container">
+                <!-- 使用8x1网格布局 -->
+                <div id="character-directory" class="character-grid">
+                    <!-- 8张立绘将由JS动态渲染在这里 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入核心管理JS和音频 -->
+<!-- 在index.html的body末尾修改script加载顺序 -->
+<script src="js/audioManager.js"></script>
+<script src="js/bookCore.js"></script>
+<script>
+    // 等待所有DOM和脚本加载完成
+    window.addEventListener('load', function() {
+        console.log('页面完全加载完成');
+        console.log('AudioManager 存在吗?', !!window.AudioManager);
+        console.log('BookManager 存在吗?', !!window.BookManager);
+        
+        // 初始化音频
+        if (window.AudioManager) {
+            console.log('初始化音频管理器');
+            AudioManager.init();
+        } else {
+            console.error('AudioManager 未找到，请检查 audioManager.js 文件');
+            // 显示错误提示
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(255,0,0,0.8);
+                color: white;
+                padding: 10px 20px;
+                border-radius: 5px;
+                z-index: 10000;
+            `;
+            errorDiv.textContent = '音频模块加载失败，请检查控制台';
+            document.body.appendChild(errorDiv);
+        }
+    });
+    
+    // 简化版刷新控制
+    (function() {
+        // 检查是否有从封面进入的标记
+        const hasEnteredFromCover = sessionStorage.getItem('hasEnteredFromCover');
+        
+        console.log('页面访问检查:', {
+            hasEnteredFromCover: hasEnteredFromCover
+        });
+        
+        // 如果没有进入标记，跳回封面
+        if (!hasEnteredFromCover) {
+            console.log('直接访问或刷新，跳转回封面');
+            window.location.href = 'index.html';
+            return;
+        }
+    })();
+</script>
+</body>
+</html>

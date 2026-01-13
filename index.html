@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>故事封面</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { height: 100%; overflow: hidden; }
+
+        #cover-container {
+            width: 100vw;
+            height: 100vh;
+            background: url('images/cover/bg.jpg') no-repeat center center;
+            background-size: cover;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 更深的动态蓝色背景层 */
+        #dynamic-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, 
+                #050a1e 0%, 
+                #0a1428 25%, 
+                #0f1e32 50%, 
+                #0a1428 75%, 
+                #050a1e 100%);
+            background-size: 400% 400%;
+            opacity: 0;
+            z-index: 2;
+            animation: gradientShift 6s ease infinite;
+            transition: opacity 1.5s ease;
+        }
+
+        @keyframes gradientShift {
+            0% { 
+                background-position: 0% 50%; 
+                filter: hue-rotate(0deg);
+            }
+            25% { 
+                background-position: 50% 100%; 
+                filter: hue-rotate(15deg);
+            }
+            50% { 
+                background-position: 100% 50%; 
+                filter: hue-rotate(0deg);
+            }
+            75% { 
+                background-position: 50% 0%; 
+                filter: hue-rotate(-15deg);
+            }
+            100% { 
+                background-position: 0% 50%; 
+                filter: hue-rotate(0deg);
+            }
+        }
+
+        /* 第一阶段：蓝色加载进度条 */
+        #loading-progress-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60%;
+            max-width: 600px;
+            z-index: 10;
+        }
+
+        .progress-text {
+            color: white;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+
+        #loading-progress-bar {
+            width: 100%;
+            height: 12px;
+            background: rgba(0, 20, 40, 0.8);
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 80, 160, 0.6);
+            border: 1px solid rgba(80, 130, 220, 0.4);
+        }
+
+        #loading-progress-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                #0a5fa0 0%, 
+                #1e6fb8 25%, 
+                #327fd0 50%, 
+                #1e6fb8 75%, 
+                #0a5fa0 100%);
+            border-radius: 6px;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 15px rgba(30, 120, 200, 0.9);
+        }
+
+        /* 第二阶段：标题图片淡入 - 放大一倍 */
+        #title-image {
+            /* 初始状态：隐藏 */
+            opacity: 0;
+            transition: opacity 1.5s ease;
+            z-index: 5;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            /* 放大一倍 */
+            width: 160%;
+            max-width: 1600px;
+            filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.5));
+        }
+
+        /* 第三阶段：白色遮罩合拢 */
+        .white-mask {
+            position: absolute;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            background: white;
+            z-index: 6;
+            transition: transform 1.2s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+
+        #left-mask {
+            left: 0;
+            transform: translateX(-100%);
+        }
+
+        #right-mask {
+            right: 0;
+            transform: translateX(100%);
+        }
+
+        /* 第四阶段：杯子图片淡入 - 放大一倍 */
+        #cup-image {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            /* 放大一倍 */
+            width: 80%;
+            max-width: 800px;
+            opacity: 0;
+            z-index: 7;
+            transition: opacity 1.5s ease;
+            filter: drop-shadow(0 0 15px rgba(0, 0, 0, 0.4));
+        }
+
+        /* 最终阶段：点击提示 - 初始隐藏，动画结束后显示 */
+        #subtitle {
+            color: black; /* 字体颜色改回黑色 */
+            font-size: 1.5em;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+            opacity: 0;
+            /* 呼吸动画 */
+            animation: breathe 2s infinite alternate;
+            z-index: 8;
+            position: relative;
+            text-align: center;
+            padding: 15px 30px;
+            /* 元素框改为#6495ED */
+            background: #6495ED; /* 使用纯色背景 */
+            border-radius: 10px;
+            border: 2px solid rgba(0, 0, 0, 0.2);
+            /* 初始完全隐藏，直到动画结束 */
+            visibility: hidden;
+            /* 移除发光效果，只保留简单的内阴影 */
+            box-shadow: 
+                inset 0 1px 3px rgba(255, 255, 255, 0.5),
+                0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        @keyframes breathe {
+            from { 
+                opacity: 0.7; 
+                transform: translateY(0); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(-5px); 
+            }
+        }
+
+        /* 点击后显示的加载条（用于跳转） */
+        #loading-bar {
+            position: absolute;
+            bottom: 20%;
+            width: 0%;
+            height: 4px;
+            background: linear-gradient(to right, #6495ED, #87CEEB);
+            border-radius: 2px;
+            transition: width 1.5s ease;
+            z-index: 9;
+        }
+        
+        #cover-container.clicked #loading-bar {
+            width: 70%;
+        }
+
+        /* 确保音频控制按钮在最上层 */
+        #global-audio-controls {
+            z-index: 10000 !important;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            #title-image {
+                width: 180%;
+            }
+            
+            #cup-image {
+                width: 100%;
+            }
+            
+            #subtitle {
+                font-size: 1.2em;
+                padding: 10px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="cover-container">
+        <!-- 动态深蓝色背景层 -->
+        <div id="dynamic-background"></div>
+        
+        <!-- 第一阶段：蓝色进度条 -->
+        <div id="loading-progress-container">
+            <div class="progress-text">正在加载故事世界...</div>
+            <div id="loading-progress-bar">
+                <div id="loading-progress-fill"></div>
+            </div>
+        </div>
+
+        <!-- 第二阶段：标题图片 -->
+        <img id="title-image" src="images/cover/title.png" alt="故事标题">
+        
+        <!-- 第三阶段：白色遮罩 -->
+        <div id="left-mask" class="white-mask"></div>
+        <div id="right-mask" class="white-mask"></div>
+        
+        <!-- 第四阶段：杯子图片 -->
+        <img id="cup-image" src="images/cover/cup.png" alt="杯子">
+        
+        <!-- 最终阶段：点击提示 -->
+        <p id="subtitle">点击任意位置进入游戏</p>
+        
+        <!-- 点击后跳转加载条 -->
+        <div id="loading-bar"></div>
+    </div>
+
+    <!-- 引入音频管理（保留文件但不使用音效） -->
+    <script src="js/audioManager.js"></script>
+    
+    <script>
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', function() {
+            // 初始化音频管理器（虽然不使用音效，但仍保留初始化）
+            if (window.AudioManager) {
+                AudioManager.init();
+            }
+            
+            // 开始动态加载序列
+            startLoadingSequence();
+        });
+
+        // 动态加载序列函数
+        function startLoadingSequence() {
+            const progressFill = document.getElementById('loading-progress-fill');
+            const progressText = document.querySelector('.progress-text');
+            const titleImage = document.getElementById('title-image');
+            const leftMask = document.getElementById('left-mask');
+            const rightMask = document.getElementById('right-mask');
+            const cupImage = document.getElementById('cup-image');
+            const subtitle = document.getElementById('subtitle');
+            const dynamicBg = document.getElementById('dynamic-background');
+            const cover = document.getElementById('cover-container');
+            
+            let progress = 0;
+            const totalSteps = 100;
+            
+            // 第一步：模拟加载进度条
+            const progressInterval = setInterval(() => {
+                progress += 1;
+                progressFill.style.width = progress + '%';
+                
+                // 更新加载文本
+                if (progress <= 30) {
+                    progressText.textContent = '正在初始化故事引擎...';
+                } else if (progress <= 60) {
+                    progressText.textContent = '正在加载人物数据...';
+                } else if (progress <= 90) {
+                    progressText.textContent = '正在载入场景资源...';
+                } else {
+                    progressText.textContent = '加载完成！';
+                }
+                
+                // 加载完成后进入下一步
+                if (progress >= totalSteps) {
+                    clearInterval(progressInterval);
+                    
+                    // 延迟后进入第二步：淡入标题
+                    setTimeout(() => {
+                        // 隐藏进度条
+                        const progressContainer = document.getElementById('loading-progress-container');
+                        progressContainer.style.opacity = '0';
+                        progressContainer.style.transition = 'opacity 0.5s ease';
+                        
+                        // 显示动态深蓝色背景
+                        dynamicBg.style.opacity = '0.9'; // 提高不透明度
+                        
+                        // 显示标题
+                        titleImage.style.opacity = '1';
+                        
+                        // 2秒后进入第三步：白色遮罩合拢
+                        setTimeout(() => {
+                            // 隐藏动态深蓝色背景
+                            dynamicBg.style.opacity = '0';
+                            
+                            // 白色遮罩合拢动画
+                            leftMask.style.transform = 'translateX(0)';
+                            rightMask.style.transform = 'translateX(0)';
+                            
+                            // 遮罩合拢后进入第四步：淡入杯子图片
+                            setTimeout(() => {
+                                // 隐藏标题
+                                titleImage.style.opacity = '0';
+                                
+                                // 显示杯子图片
+                                cupImage.style.opacity = '1';
+                                
+                                // 2秒后进入第五步：显示点击提示
+                                setTimeout(() => {
+                                    // 隐藏杯子
+                                    cupImage.style.opacity = '0';
+                                    
+                                    // 同时隐藏白色遮罩
+                                    leftMask.style.opacity = '0';
+                                    rightMask.style.opacity = '0';
+                                    leftMask.style.transition = 'opacity 0.8s ease, transform 1.2s cubic-bezier(0.77, 0, 0.175, 1)';
+                                    rightMask.style.transition = 'opacity 0.8s ease, transform 1.2s cubic-bezier(0.77, 0, 0.175, 1)';
+                                    
+                                    // 延迟一小段时间后显示点击提示
+                                    setTimeout(() => {
+                                        // 显示点击提示（先设置可见性，再淡入）
+                                        subtitle.style.visibility = 'visible';
+                                        subtitle.style.opacity = '1';
+                                        
+                                        // 所有动画完成后，添加点击事件
+                                        setupClickEvent();
+                                        
+                                    }, 500); // 遮罩完全消失后再显示提示
+                                    
+                                }, 2000); // 杯子显示2秒
+                                
+                            }, 1200); // 遮罩合拢动画时间
+                            
+                        }, 2000); // 标题显示2秒
+                        
+                    }, 500); // 进度条消失延迟
+                }
+            }, 30); // 每30毫秒增加1%进度
+        }
+        
+        // 设置点击事件函数（在所有动画播放完毕后再设置）
+        function setupClickEvent() {
+            const cover = document.getElementById('cover-container');
+            const subtitle = document.getElementById('subtitle');
+            let hasClicked = false;
+            
+            cover.addEventListener('click', function() {
+                if (hasClicked) return; // 防止重复点击
+                hasClicked = true;
+                
+                // 添加触发动画的类名
+                this.classList.add('clicked');
+                
+                // 动画播放1.5秒后跳转到主目录页
+                setTimeout(() => {
+                    // 设置标记，表示用户已从封面页进入
+                    sessionStorage.setItem('hasEnteredFromCover', 'true');
+                    window.location.href = 'directory.html'; // 跳转到人物目录页
+                }, 1500);
+            });
+            
+            // 确保提示文字正确显示
+            subtitle.textContent = "点击任意位置开始";
+            subtitle.style.animation = 'breathe 2s infinite alternate';
+        }
+    </script>
+</body>
+</html>
